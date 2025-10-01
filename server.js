@@ -7,7 +7,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+// app.use(cors()); ----> (changed)
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'https://vercel-frontend-mu-jade.vercel.app',  // Your frontend URL
+        'https://*.vercel.app'  // Allow all vercel subdomains
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 // Set SendGrid API Key
@@ -27,15 +36,15 @@ app.post('/api/send-otp', async (req, res) => {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Email is required' 
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required'
             });
         }
 
         // Generate OTP
         const otp = generateOTP();
-        
+
         // Store OTP with 10 minute expiry
         otpStore.set(email, {
             otp: otp,
@@ -71,17 +80,17 @@ app.post('/api/send-otp', async (req, res) => {
 
         console.log(`✅ OTP sent to ${email}: ${otp}`);
 
-        res.json({ 
-            success: true, 
-            message: 'OTP sent successfully' 
+        res.json({
+            success: true,
+            message: 'OTP sent successfully'
         });
 
     } catch (error) {
         console.error('❌ Error sending OTP:', error.response ? error.response.body : error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Failed to send OTP',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -92,27 +101,27 @@ app.post('/api/verify-otp', (req, res) => {
         const { email, otp } = req.body;
 
         if (!email || !otp) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Email and OTP are required' 
+            return res.status(400).json({
+                success: false,
+                message: 'Email and OTP are required'
             });
         }
 
         const storedData = otpStore.get(email);
 
         if (!storedData) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'No OTP found for this email. Please request a new one.' 
+            return res.status(400).json({
+                success: false,
+                message: 'No OTP found for this email. Please request a new one.'
             });
         }
 
         // Check if OTP expired
         if (Date.now() > storedData.expiresAt) {
             otpStore.delete(email);
-            return res.status(400).json({ 
-                success: false, 
-                message: 'OTP has expired. Please request a new one.' 
+            return res.status(400).json({
+                success: false,
+                message: 'OTP has expired. Please request a new one.'
             });
         }
 
@@ -120,31 +129,31 @@ app.post('/api/verify-otp', (req, res) => {
         if (storedData.otp === otp) {
             otpStore.delete(email); // Clear OTP after successful verification
             console.log(`✅ OTP verified successfully for ${email}`);
-            return res.json({ 
-                success: true, 
-                message: 'OTP verified successfully' 
+            return res.json({
+                success: true,
+                message: 'OTP verified successfully'
             });
         } else {
             console.log(`❌ Invalid OTP attempt for ${email}`);
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid OTP. Please try again.' 
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid OTP. Please try again.'
             });
         }
 
     } catch (error) {
         console.error('❌ Error verifying OTP:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Failed to verify OTP',
-            error: error.message 
+            error: error.message
         });
     }
 });
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'Server is running',
         timestamp: new Date().toISOString()
     });
@@ -152,7 +161,7 @@ app.get('/api/health', (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
-    res.json({ 
+    res.json({
         message: 'B-Buddy API Server',
         endpoints: {
             sendOtp: 'POST /api/send-otp',
