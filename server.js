@@ -8,15 +8,34 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 // app.use(cors()); ----> (changed)
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'https://vercel-frontend-mu-jade.vercel.app',  // Your frontend URL
-        'https://*.vercel.app'  // Allow all vercel subdomains
-    ],
-    credentials: true
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://vercel-frontend-mu-jade.vercel.app'
+        ];
+
+        // Allow any vercel.app subdomain
+        if (origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 
 // Set SendGrid API Key
