@@ -7,34 +7,34 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
- app.use(cors()); //(for local run)
+ //app.use(cors()); //(for local run)
 
-// app.use(cors({       //(for vercel)
-//     origin: function (origin, callback) {
-//         // Allow requests with no origin (like mobile apps or curl requests)
-//         if (!origin) return callback(null, true);
+app.use(cors({       //(for vercel)
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
 
-//         const allowedOrigins = [
-//             'http://localhost:5173',
-//             'http://localhost:3000',
-//             'https://vercel-frontend-mu-jade.vercel.app'
-//         ];
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://vercel-frontend-mu-jade.vercel.app'
+        ];
 
-//         // Allow any vercel.app subdomain
-//         if (origin.endsWith('.vercel.app')) {
-//             return callback(null, true);
-//         }
+        // Allow any vercel.app subdomain
+        if (origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
 
-//         if (allowedOrigins.indexOf(origin) !== -1) {
-//             callback(null, true);
-//         } else {
-//             callback(new Error('Not allowed by CORS'));
-//         }
-//     },
-//     credentials: true,
-//     methods: ['GET', 'POST', 'OPTIONS'],
-//     allowedHeaders: ['Content-Type', 'Authorization']
-// }));
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 
 
